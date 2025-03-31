@@ -39,7 +39,7 @@ def save_yaml(data, filename="config.yaml"):
     
     yaml_str = yaml.dump(data, default_flow_style=False)
     st.download_button(
-        label="Konfiguráció letöltése",
+        label="Download Configuration",
         data=yaml_str,
         file_name=filename,
         mime="text/yaml"
