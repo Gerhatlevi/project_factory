@@ -1,4 +1,2 @@
 streamlit
-yaml
-os
-re
+PyYAML
