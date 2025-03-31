@@ -36,6 +36,14 @@ def save_yaml(data, filename="config.yaml"):
     with open(filepath, "w") as file:
         yaml.dump(data, file, default_flow_style=False)
     st.success(f"A konfiguráció mentve: {filepath}")
+    
+    yaml_str = yaml.dump(data, default_flow_style=False)
+    st.download_button(
+        label="Konfiguráció letöltése",
+        data=yaml_str,
+        file_name=filename,
+        mime="text/yaml"
+    )
 
 def render_iam_config(iam_key, iam_data):
     st.write(f"IAM Configuration for {iam_key}")
