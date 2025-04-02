@@ -2,6 +2,8 @@ import re
 import streamlit as st
 import yaml
 import os
+import firebase_admin
+import pyrebase
 
 
 config_template = {
@@ -29,6 +31,17 @@ config_template = {
     "shared_vpc_service_project_config": {},
     "tag_bindings": {},
     "vpc_sc": {},
+}
+
+firebaseConfig = {
+  "apiKey": "AIzaSyBRW_cwdGIJ0s7i9xUWrI6vZ4Zj7F9FpVE",
+  "authDomain": "test-6f645.firebaseapp.com",
+  "projectId": "test-6f645",
+  "storageBucket": "test-6f645.firebasestorage.app",
+  "messagingSenderId": "372894427916",
+  "appId": "1:372894427916:web:516ee1ce9e667301427729",
+  "measurementId": "G-S0Q68CMTR6",
+  "databaseURL": "",
 }
 
 def save_yaml(data, filename="config.yaml"):
@@ -1406,56 +1419,92 @@ def render_vpc_sc():
         return True
     return True
 
-st.title("Project Factory Frontend")
+def login():
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    
+    if st.button("Login"):
+        try:
+            user = auth_client.sign_in_with_email_and_password(email, password)
+            st.session_state.user = user
+            st.session_state.user = {
+                "email": user["email"],
+            }
+            st.success("Login Successful!")
+            if st.button("Proceed to config"):
+                st.rerun()
+        except Exception as e:
+            st.error(f"Error: {e}")
 
-automation_savable = render_automation()
+def main_app():
+    st.write(f"Hello, {str(st.session_state.user["email"])}!")
 
-render_string_inputs()
+    if st.button("Logout"):
+        del st.session_state.user
+        st.success("Logged out successfully!")
+        st.rerun()
 
-render_string_array()
+    st.title("Project Factory Frontend")
 
-render_buckets()
+    automation_savable = render_automation()
 
-render_contacts()
+    render_string_inputs()
 
-render_project_iam()
+    render_string_array()
 
-render_iam_by_principals()
+    render_buckets()
 
-config_template["labels"] = render_labels(config_template.get("labels", {}), "labels")
+    render_contacts()
 
-render_string_array("metric_scopes", "Metric Scopes")
+    render_project_iam()
 
-render_org_policies()
+    render_iam_by_principals()
 
-render_service_accounts()
+    config_template["labels"] = render_labels(config_template.get("labels", {}), "labels")
 
-render_service_encryption_key_ids()
+    render_string_array("metric_scopes", "Metric Scopes")
 
-render_services()
+    render_org_policies()
 
-render_shared_vpc_host()
+    render_service_accounts()
 
-render_shared_vpc_service_config()
+    render_service_encryption_key_ids()
 
-render_dynamic_schema(
-    key="tag_bindings",
-    title="Tag Bindings",
-)
+    render_services()
 
-savable = render_vpc_sc()
+    render_shared_vpc_host()
+
+    render_shared_vpc_service_config()
+
+    render_dynamic_schema(
+        key="tag_bindings",
+        title="Tag Bindings",
+    )
+
+    savable = render_vpc_sc()
 
 
-if st.button("Save Config"):
-    if automation_savable == "no":
-        st.error("A Project Name kötelező!")
-    elif not can_save_config(config_template["automation"]["bucket"].get("iam_bindings", {})):
-        st.error("Invalid IAM Bindings configuration!")
-    elif not savable:
-        st.error("Invalid VPC SC configuration!")
-    else:
-        save_yaml(config_template)
+    if st.button("Save Config"):
+        if automation_savable == "no":
+            st.error("A Project Name kötelező!")
+        elif not can_save_config(config_template["automation"]["bucket"].get("iam_bindings", {})):
+            st.error("Invalid IAM Bindings configuration!")
+        elif not savable:
+            st.error("Invalid VPC SC configuration!")
+        else:
+            save_yaml(config_template)
 
-if st.button("Reset Config"):
-    st.session_state.clear()
-    st.rerun() 
+    if st.button("Reset Config"):
+        authentication = st.session_state.get("user")
+        st.session_state.clear()
+        st.session_state.user = authentication
+        st.rerun() 
+
+
+firebase = pyrebase.initialize_app(firebaseConfig)
+auth_client = firebase.auth()
+
+if 'user' not in st.session_state:
+    login()
+else:
+    main_app()
