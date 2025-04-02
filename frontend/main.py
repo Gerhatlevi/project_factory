@@ -2,8 +2,12 @@ import re
 import streamlit as st
 import yaml
 import os
-import firebase_admin
 import pyrebase
+import json
+from dotenv import load_dotenv
+
+if os.path.exists('.env'):
+    load_dotenv()
 
 
 config_template = {
@@ -33,16 +37,8 @@ config_template = {
     "vpc_sc": {},
 }
 
-firebaseConfig = {
-  "apiKey": "AIzaSyBRW_cwdGIJ0s7i9xUWrI6vZ4Zj7F9FpVE",
-  "authDomain": "test-6f645.firebaseapp.com",
-  "projectId": "test-6f645",
-  "storageBucket": "test-6f645.firebasestorage.app",
-  "messagingSenderId": "372894427916",
-  "appId": "1:372894427916:web:516ee1ce9e667301427729",
-  "measurementId": "G-S0Q68CMTR6",
-  "databaseURL": "",
-}
+firebase_config_json = os.environ.get('FIREBASE_CONFIG')
+firebase_config = json.loads(firebase_config_json)
 
 def save_yaml(data, filename="config.yaml"):
     filepath = os.path.join(os.path.dirname(__file__), filename)
