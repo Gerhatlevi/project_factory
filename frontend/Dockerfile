@@ -18,9 +18,6 @@ RUN pip install --upgrade pip setuptools
 # Alkalmazás másolása
 COPY . .
 
-# Firebase Admin SDK konfigurációs fájl másolása
-COPY firebase-adminsdk.json ./
-
 # Port megnyitása
 EXPOSE 8080
 

@@ -37,8 +37,18 @@ config_template = {
     "vpc_sc": {},
 }
 
-firebase_config_json = os.environ.get('FIREBASE_CONFIG')
-firebase_config = json.loads(firebase_config_json)
+
+firebase_config = {
+    'apiKey': os.getenv('FIREBASE_API_KEY'),
+    'authDomain': os.getenv('FIREBASE_AUTH_DOMAIN'),
+    'projectId': os.getenv('FIREBASE_PROJECT_ID'),
+    'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET'),
+    'messagingSenderId': os.getenv('FIREBASE_MESSAGING_SENDER_ID'),
+    'appId': os.getenv('FIREBASE_APP_ID'),
+    'measurementId': os.getenv('FIREBASE_MEASUREMENT_ID'),
+    'databaseURL': os.getenv('FIREBASE_DATABASE_URL')
+}
+print(firebase_config)
 
 def save_yaml(data, filename="config.yaml"):
     filepath = os.path.join(os.path.dirname(__file__), filename)
@@ -472,7 +482,7 @@ def render_dynamic_schema(key, title):
             del st.session_state[key][entry_id]
             return
 
-def render_service_accounts():
+def render_service_accounts_for_automation():
     st.subheader("Service Accounts")
     if "service_accounts" not in st.session_state:
         st.session_state.service_accounts = {}
@@ -848,7 +858,7 @@ def render_automation():
         
         render_bucket_config("automation", "bucket")
 
-        render_service_accounts()
+        render_service_accounts_for_automation()
 
     if generate_automation and config_template["automation"]["project"] == "":
         return "no"
@@ -1095,10 +1105,10 @@ def render_service_accounts():
         new_sa_id = st.text_input(
             "Service Account ID",
             help="Lowercase letters, numbers and hyphens only",
-            key="new_sa_id_input"
+            key="_new_sa_id_input"
         )
         
-        if st.button("Add Service Account", key="add_sa_btn"):
+        if st.button("Add Service Account", key="_add_sa_btn"):
             if not new_sa_id:
                 st.error("Service Account ID is required!")
             elif not re.match(r"^[a-z0-9-]+$", new_sa_id):
@@ -1497,7 +1507,7 @@ def main_app():
         st.rerun() 
 
 
-firebase = pyrebase.initialize_app(firebaseConfig)
+firebase = pyrebase.initialize_app(firebase_config)
 auth_client = firebase.auth()
 
 if 'user' not in st.session_state:
