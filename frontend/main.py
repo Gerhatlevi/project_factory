@@ -54,13 +54,12 @@ config_template = {
 def get_firebase_config(project_id, secret_id: str = "FIREBASE_CONFIG"):
     client = secretmanager.SecretManagerServiceClient()
     name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
-    
     response = client.access_secret_version(request={"name": name})
     payload = response.payload.data.decode("UTF-8")
     return json.loads(payload)
 
 if st.session_state.get("firebase_config") is None:
-    st.session_state.firebase_config = get_firebase_config(os.getenv("GCP_PROJECT_ID"))
+    st.session_state.firebase_config = get_firebase_config(os.getenv("GOOGLE_CLOUD_PROJECT"))
 firebase_config = st.session_state.firebase_config
 BUCKET_NAME = "config-yaml"
 
