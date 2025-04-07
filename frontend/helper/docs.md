@@ -38,3 +38,27 @@
 6.  Cloud Build subscribes to this Pub/Sub topic and is triggered upon receiving the message.
 7.  The Cloud Build pipeline reads the YAML file from Cloud Storage.
 8.  Cloud Build uses the Cloud Foundation Fabric and the Project Factory App to create the Google Cloud project according to the configuration in the YAML file and the corresponding state file.
+
+PS C:\egyetem\szinvanet\project-factory-app> gcloud run deploy streamlit-app `
+>>   --source . `
+>>   --region=europe-west2 `
+>>   --project=project-factory-test-455612 `
+>>   --allow-unauthenticated `
+>>   --set-env-vars="FIREBASE_API_KEY=AIzaSyBRW_cwdGIJ0s7i9xUWrI6vZ4Zj7F9FpVE" `
+>>   --set-env-vars="FIREBASE_AUTH_DOMAIN=test-6f645.firebaseapp.com" `
+>>   --set-env-vars="FIREBASE_PROJECT_ID=test-6f645" `
+>>   --set-env-vars="FIREBASE_STORAGE_BUCKET=test-6f645.firebasestorage.app" `
+>>   --set-env-vars="FIREBASE_MESSAGING_SENDER_ID=372894427916" `
+>>   --set-env-vars="FIREBASE_APP_ID=1:372894427916:web:516ee1ce9e667301427729" `
+>>   --set-env-vars="FIREBASE_MEASUREMENT_ID=G-S0Q68CMTR6" `
+>>   --set-env-vars="FIREBASE_DATABASE_URL=" `
+>>   --port=8080
+
+gcloud builds submit --config=cloudbuild.yaml `
+  --substitutions "_SERVICE_NAME=my-streamlit-app,_REGION=europe-west1"
+
+# Kép újraépítése
+docker build -t my-streamlit-app -f Dockerfile .
+
+# Konténer indítása
+docker run -p 8080:8080 -e PORT=8080 my-streamlit-app

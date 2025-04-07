@@ -4,3 +4,4 @@ pyrebase4
 google-cloud-secret-manager
 firebase-admin
 setuptools
+python-dotenv
