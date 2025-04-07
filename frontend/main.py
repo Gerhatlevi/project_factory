@@ -3,8 +3,10 @@ import streamlit as st
 import yaml
 import os
 import pyrebase
+import json
 from dotenv import load_dotenv
 from google.cloud import storage
+from google.cloud import secretmanager
 
 if os.path.exists('.env'):
     load_dotenv()
@@ -38,17 +40,28 @@ config_template = {
 }
 
 
-firebase_config = {
-  "apiKey": "AIzaSyBRW_cwdGIJ0s7i9xUWrI6vZ4Zj7F9FpVE",
-  "authDomain": "test-6f645.firebaseapp.com",
-  "projectId": "test-6f645",
-  "storageBucket": "test-6f645.firebasestorage.app",
-  "messagingSenderId": "372894427916",
-  "appId": "1:372894427916:web:516ee1ce9e667301427729",
-  "measurementId": "G-S0Q68CMTR6",
-  "databaseURL": ""
-}
+#firebase_config = {
+#  "apiKey": "AIzaSyBRW_cwdGIJ0s7i9xUWrI6vZ4Zj7F9FpVE",
+#  "authDomain": "test-6f645.firebaseapp.com",
+#  "projectId": "test-6f645",
+#  "storageBucket": "test-6f645.firebasestorage.app",
+#  "messagingSenderId": "372894427916",
+#  "appId": "1:372894427916:web:516ee1ce9e667301427729",
+#  "measurementId": "G-S0Q68CMTR6",
+#  "databaseURL": ""
+#}
 
+def get_firebase_config(project_id, secret_id: str = "FIREBASE_CONFIG"):
+    client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
+    
+    response = client.access_secret_version(request={"name": name})
+    payload = response.payload.data.decode("UTF-8")
+    return json.loads(payload)
+
+if st.session_state.get("firebase_config") is None:
+    st.session_state.firebase_config = get_firebase_config(os.getenv("GCP_PROJECT_ID"))
+firebase_config = st.session_state.firebase_config
 BUCKET_NAME = "config-yaml"
 
 
