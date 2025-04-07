@@ -4,6 +4,7 @@ import yaml
 import os
 import pyrebase
 from dotenv import load_dotenv
+from google.cloud import storage
 
 if os.path.exists('.env'):
     load_dotenv()
@@ -48,20 +49,35 @@ firebase_config = {
   "databaseURL": ""
 }
 
+BUCKET_NAME = "config-yaml"
 
-def save_yaml(data, filename="config.yaml"):
-    filepath = os.path.join(os.path.dirname(__file__), filename)
-    with open(filepath, "w") as file:
-        yaml.dump(data, file, default_flow_style=False)
-    st.success(f"A konfiguráció mentve: {filepath}")
+
+def save_yaml(data, bucket_name, filename="config.yaml"):
+    """Mentés Google Cloud Storage-ba"""
     
-    yaml_str = yaml.dump(data, default_flow_style=False)
-    st.download_button(
-        label="Download Configuration",
-        data=yaml_str,
-        file_name=filename,
-        mime="text/yaml"
-    )
+    try:
+        yaml_str = yaml.dump(data, default_flow_style=False)
+        
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(filename)
+        
+        blob.upload_from_string(yaml_str, content_type="text/yaml")
+        
+        st.success(f"Config saved at gs://{bucket_name}/{filename}")
+        
+        st.download_button(
+            label="Download Configuration",
+            data=yaml_str,
+            file_name=filename,
+            mime="text/yaml"
+        )
+        
+        return True
+        
+    except Exception as e:
+        st.error(f"Error during saving : {str(e)}")
+        return False
 
 def render_iam_config(iam_key, iam_data):
     st.write(f"IAM Configuration for {iam_key}")
@@ -1497,7 +1513,11 @@ def main_app():
         elif not savable:
             st.error("Invalid VPC SC configuration!")
         else:
-            save_yaml(config_template)
+            succes = save_yaml(config_template, BUCKET_NAME, "config.yaml")
+            if succes:
+                st.success("Configuration saved successfully!")
+            else:
+                st.error("Failed to save configuration!")
 
     if st.button("Reset Config"):
         authentication = st.session_state.get("user")
