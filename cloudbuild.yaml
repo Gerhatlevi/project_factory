@@ -6,6 +6,8 @@ steps:
       - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}'
       - '-f'
       - 'Dockerfile'
+      - '--build-arg'
+      - 'GOOGLE_CLOUD_PROJECT=${_PROJECT_ID}'
       - '.'
   
   - name: 'gcr.io/cloud-builders/docker'
@@ -22,6 +24,7 @@ steps:
       - '--platform=managed'
       - '--region=${_REGION}'
       - '--allow-unauthenticated'
+      - '--set-env-vars=GOOGLE_CLOUD_PROJECT={_PROJECT_ID}'
       - '--timeout=900s'
 
 options:
